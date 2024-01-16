@@ -24,7 +24,7 @@ Homepage = "https://github.com/GunShotMatch/gunshotmatch-reports"
 "Source Code" = "https://github.com/GunShotMatch/gunshotmatch-reports"
 
 [tool.whey]
-base-classifiers = []
+base-classifiers = [ "Typing :: Typed",]
 python-versions = [ "3.8", "3.9", "3.10", "3.11", "3.12",]
 python-implementations = [ "CPython",]
 platforms = [ "Windows", "macOS", "Linux",]
