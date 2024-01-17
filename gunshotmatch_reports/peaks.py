@@ -60,7 +60,7 @@ __all__ = ("load_project", "build_peak_report", "figure_to_drawing", "scale")
 
 def _get_peak_figure(project: Project, consolidated_peak: ConsolidatedPeak) -> Figure:
 
-	figsize = (6.4, 4.8)
+	# figsize = (6.4, 4.8)
 	figsize = (10.5, 5)
 	figure = plt.figure(figsize=figsize)
 	axes = figure.subplots(

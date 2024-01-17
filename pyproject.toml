@@ -32,6 +32,7 @@ license-key = "MIT"
 package = "gunshotmatch_reports"
 
 [tool.importcheck]
+always = [ "gunshotmatch_reports", "gunshotmatch_reports.peaks", "gunshotmatch_reports.chromatogram",]
 
 [tool.mypy]
 python_version = "3.8"
