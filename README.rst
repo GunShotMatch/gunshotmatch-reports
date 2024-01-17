@@ -17,8 +17,10 @@ gunshotmatch-reports
 
 	* - Tests
 	  - |actions_linux| |actions_windows| |actions_macos|
+	* - PyPI
+	  - |pypi-version| |supported-versions| |supported-implementations| |wheel|
 	* - Activity
-	  - |commits-latest| |commits-since| |maintained|
+	  - |commits-latest| |commits-since| |maintained| |pypi-downloads|
 	* - QA
 	  - |codefactor| |actions_flake8| |actions_mypy|
 	* - Other
@@ -52,6 +54,22 @@ gunshotmatch-reports
 	:target: https://www.codefactor.io/repository/github/GunShotMatch/gunshotmatch-reports
 	:alt: CodeFactor Grade
 
+.. |pypi-version| image:: https://img.shields.io/pypi/v/gunshotmatch-reports
+	:target: https://pypi.org/project/gunshotmatch-reports/
+	:alt: PyPI - Package Version
+
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/gunshotmatch-reports?logo=python&logoColor=white
+	:target: https://pypi.org/project/gunshotmatch-reports/
+	:alt: PyPI - Supported Python Versions
+
+.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/gunshotmatch-reports
+	:target: https://pypi.org/project/gunshotmatch-reports/
+	:alt: PyPI - Supported Implementations
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/gunshotmatch-reports
+	:target: https://pypi.org/project/gunshotmatch-reports/
+	:alt: PyPI - Wheel
+
 .. |license| image:: https://img.shields.io/github/license/GunShotMatch/gunshotmatch-reports
 	:target: https://github.com/GunShotMatch/gunshotmatch-reports/blob/master/LICENSE
 	:alt: License
@@ -70,6 +88,10 @@ gunshotmatch-reports
 .. |maintained| image:: https://img.shields.io/maintenance/yes/2024
 	:alt: Maintenance
 
+.. |pypi-downloads| image:: https://img.shields.io/pypi/dm/gunshotmatch-reports
+	:target: https://pypi.org/project/gunshotmatch-reports/
+	:alt: PyPI - Downloads
+
 .. end shields
 
 Installation
@@ -77,12 +99,12 @@ Installation
 
 .. start installation
 
-``gunshotmatch-reports`` can be installed from GitHub.
+``gunshotmatch-reports`` can be installed from PyPI.
 
 To install with ``pip``:
 
 .. code-block:: bash
 
-	$ python -m pip install git+https://github.com/GunShotMatch/gunshotmatch-reports
+	$ python -m pip install gunshotmatch-reports
 
 .. end installation
