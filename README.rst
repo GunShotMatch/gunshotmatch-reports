@@ -77,7 +77,7 @@ gunshotmatch-reports
 .. |language| image:: https://img.shields.io/github/languages/top/GunShotMatch/gunshotmatch-reports
 	:alt: GitHub top language
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/GunShotMatch/gunshotmatch-reports/v0.1.0
+.. |commits-since| image:: https://img.shields.io/github/commits-since/GunShotMatch/gunshotmatch-reports/v0.2.0
 	:target: https://github.com/GunShotMatch/gunshotmatch-reports/pulse
 	:alt: GitHub commits since tagged version
 
