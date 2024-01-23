@@ -9,7 +9,7 @@ print(f"Opening project {filename!r}")
 project = load_project(filename)
 print(f"Generating peak report for {project.name} ({len(project.consolidated_peaks)} peaks)")
 
-pdf_filename = build_peak_report(project, "peak_report_demo.pdf")
+pdf_filename = build_peak_report(project, "peak_report_demo.pdf", title_every_page=True)
 print(f"Report written to {pdf_filename!r}")
 
 pdf_filename = build_chromatogram_report(project, "chromatogram_demo.pdf")

@@ -28,7 +28,6 @@ PDF Peak Report Generator.
 
 # stdlib
 import os
-from io import BytesIO
 from typing import List, Optional, Tuple
 
 # 3rd party
@@ -36,10 +35,9 @@ from domdf_python_tools.paths import PathLike
 from libgunshotmatch.consolidate import ConsolidatedPeak
 from libgunshotmatch.project import Project
 from libgunshotmatch_mpl.peakviewer import draw_peaks
-from libgunshotmatch_mpl.peakviewer import load_project as load_project
+from libgunshotmatch_mpl.peakviewer import load_project as load_project  # noqa: F401
 from matplotlib import pyplot as plt  # type: ignore[import]
 from matplotlib.figure import Figure  # type: ignore[import]
-from reportlab.graphics.shapes import Drawing  # type: ignore[import]
 from reportlab.lib import colors  # type: ignore[import]
 from reportlab.lib.pagesizes import A4  # type: ignore[import]
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore[import]
@@ -47,22 +45,26 @@ from reportlab.lib.units import inch  # type: ignore[import]
 from reportlab.pdfgen.canvas import Canvas  # type: ignore[import]
 from reportlab.platypus import (  # type: ignore[import]
 		BaseDocTemplate,
+		Image,
 		PageBreak,
 		Paragraph,
 		SimpleDocTemplate,
 		Spacer,
-		Table
+		Table,
+		TableStyle
 		)
-from svglib.svglib import svg2rlg  # type: ignore[import]
 
-__all__ = ("load_project", "build_peak_report", "figure_to_drawing", "scale")
+# this package
+from gunshotmatch_reports.utils import extend_list, figure_to_drawing, scale
+
+__all__ = ["build_peak_report"]
 
 
 def _get_peak_figure(project: Project, consolidated_peak: ConsolidatedPeak) -> Figure:
 
 	# figsize = (6.4, 4.8)
 	figsize = (10.5, 5)
-	figure = plt.figure(figsize=figsize)
+	figure = plt.figure(figsize=figsize, layout="constrained")
 	axes = figure.subplots(
 			len(project.datafile_data),
 			1,
@@ -74,21 +76,14 @@ def _get_peak_figure(project: Project, consolidated_peak: ConsolidatedPeak) -> F
 	return figure
 
 
-def scale(drawing: Drawing, scale: float) -> Drawing:
-	"""
-	Scale reportlab.graphics.shapes.Drawing() object while maintaining aspect ratio.
-
-	:param drawing:
-	:param scale:
-	"""
-
-	scaling_x = scaling_y = scale
-
-	drawing.width = drawing.minWidth() * scaling_x
-	drawing.height = drawing.height * scaling_y
-	drawing.scale(scaling_x, scaling_y)
-
-	return drawing
+def _get_peak_image(
+		project: Project,
+		consolidated_peak: ConsolidatedPeak,
+		image_scale: float = 0.75,
+		align: str = "CENTER",
+		) -> Image:
+	drawing = figure_to_drawing(_get_peak_figure(project, consolidated_peak))
+	return Image(scale(drawing, scale=image_scale), hAlign=align)
 
 
 styles = getSampleStyleSheet()
@@ -104,21 +99,12 @@ title_spacer_style = ParagraphStyle(
 		)
 
 
-def figure_to_drawing(figure: Figure) -> Drawing:
-	"""
-	Convert a matplotlib figure to a reportlab drawing.
-
-	:param figure:
-	"""
-
-	imgdata = BytesIO()
-	figure.savefig(imgdata, format="svg")
-	plt.close(fig=figure)
-	imgdata.seek(0)  # go to start of BytesIO
-	return svg2rlg(imgdata)
-
-
-def build_peak_report(project: Project, pdf_filename: Optional[PathLike] = None) -> str:
+def build_peak_report(
+		project: Project,
+		pdf_filename: Optional[PathLike] = None,
+		*,
+		title_every_page: bool = False,
+		) -> str:
 	"""
 	Construct a peak report for the given project and write to the chosen file.
 
@@ -145,47 +131,74 @@ def build_peak_report(project: Project, pdf_filename: Optional[PathLike] = None)
 			pagesize=A4[::-1],
 			leftMargin=0.5 * inch,
 			righMargin=0.5 * inch,
-			topMargin=0.5 * inch,
+			topMargin=0.75 * inch,
 			bottomMargin=0.5 * inch,
 			title=pageinfo,
 			)
 
-	doc_elements = [Paragraph(pageinfo, style=title_style)]
+	page_title_para = Paragraph(pageinfo, style=title_style)
+	doc_elements = [page_title_para]
 
 	assert project.consolidated_peaks is not None
 	max_peak_number = len(project.consolidated_peaks)
 
+	num_rows = max(5, len(project.datafile_data))
+
+	all_areas = [cp.area for cp in project.consolidated_peaks]
+	max_area = max(all_areas)
+	area_percentages = [area / max_area for area in all_areas]
+
 	for peak_idx, consolidated_peak in enumerate(project.consolidated_peaks):
-		figure = _get_peak_figure(project, consolidated_peak)
-		drawing = figure_to_drawing(figure)
+		image = _get_peak_image(project, consolidated_peak)
 
 		peak_metadata: List[Tuple[str, str]] = [
 				("Peak", f"{peak_idx+1} / {max_peak_number}"),
-				("Retention Time", f"{consolidated_peak.rt / 60}"),
-				("Match Factor", f"{consolidated_peak.hits[0].match_factor}"),
+				("Retention Time", f"{consolidated_peak.rt / 60:0.3f}"),
+				("Peak Area", f"{consolidated_peak.area:0,.1f}"),
+				# ("Peak Area Stdev", f"{consolidated_peak.area_stdev:0.1f}"),
+				("Peak Area %", f"{area_percentages[peak_idx]:0.3%}"),
 				("Rejected", f"{not consolidated_peak.meta.get('acceptable_shape', True)}"),
-				('', ''),
 				]
+
+		peak_metadata = extend_list(peak_metadata, ('', ''), num_rows)
 
 		hits_data: List[Tuple[str, str, str]] = []
 		for hit in consolidated_peak.hits[:5]:
 			hits_data.append((hit.name, f"{hit.match_factor:.1f}", str(len(hit))))
 
-		while len(hits_data) < 5:
-			hits_data.append(('', '', ''))
+		hits_data = extend_list(hits_data, ('', '', ''), num_rows)
 
-		table_data = []
-		for peak_row, hits_row in zip(peak_metadata, hits_data):
-			table_row = peak_row + ('', ) + hits_row
+		rt_area_data = []
+		for rt, area in zip(consolidated_peak.rt_list, consolidated_peak.area_list):
+			rt_area_data.append((f"{rt/60:0.3f}", f"{area:0,.1f}"))
+
+		rt_area_data = extend_list(rt_area_data, ('', ''), num_rows)
+
+		table_data = [('', '', '', "Hit Name", "MF", 'n', '', "RTs", "Peak Areas")]
+		for peak_row, hits_row, rt_area_row in zip(peak_metadata, hits_data, rt_area_data):
+			table_row = peak_row + ('', ) + hits_row + ('', ) + rt_area_row
 			table_data.append(table_row)
 
-		t = Table(table_data)
+		t = Table(
+				table_data,
+				colWidths=(None, None, 0.04 * inch, None, None, None, 0.04 * inch, None, None),
+				)
+		tablestyle = TableStyle([
+				# 	('SPAN', (5, 0), (6, 0)),
+				("LINEBELOW", (0, 0), (-1, 0), 0.25, colors.black),
+				("LINEAFTER", (1, 0), (2, -1), 0.25, colors.black),
+				("LINEAFTER", (5, 0), (6, -1), 0.25, colors.black),
+				])
+		t.setStyle(tablestyle)
 		doc_elements.append(t)
 
-		doc_elements.append(scale(drawing, scale=0.8))
-		doc_elements.append(Spacer(1, 0.2 * inch))
+		doc_elements.append(image)
+		doc_elements.append(Spacer(1, 0.25 * inch))
 		doc_elements.append(PageBreak())
-		doc_elements.append(Paragraph('a', style=title_spacer_style))
+		if title_every_page:
+			doc_elements.append(page_title_para)
+		else:
+			doc_elements.append(Paragraph('a', style=title_spacer_style))
 		# doc_elements.append(Spacer(1,1*inch))
 
 	# Remove last page break to prevent blank page
