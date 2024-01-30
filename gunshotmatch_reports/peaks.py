@@ -28,7 +28,7 @@ PDF Peak Report Generator.
 
 # stdlib
 import os
-from typing import List, Optional, Tuple
+from typing import List, NamedTuple, Optional, Tuple
 
 # 3rd party
 from domdf_python_tools.paths import PathLike
@@ -57,7 +57,7 @@ from reportlab.platypus import (  # type: ignore[import]
 # this package
 from gunshotmatch_reports.utils import extend_list, figure_to_drawing, scale
 
-__all__ = ["build_peak_report"]
+__all__ = ("PeakMetadataTable", "PeakSummary", "build_peak_report")
 
 
 def _get_peak_figure(project: Project, consolidated_peak: ConsolidatedPeak) -> Figure:
@@ -97,6 +97,115 @@ title_spacer_style = ParagraphStyle(
 		parent=title_style,
 		textColor=colors.HexColor("#ffffff"),
 		)
+
+
+class PeakSummary(NamedTuple):
+	"""
+	Summary data for a :class:`~libgunshotmatch.consolidate.ConsolidatedPeak`.
+
+	Formatted for insertion into a PDF or CSV peak report.
+
+	.. versionadded:: 0.3.0
+	"""
+
+	#: Peak number, 1-indexed
+	peak_no: str
+	name: str
+	rt: str
+	area: str
+	area_percentage: str
+	mf: str
+	rejected: str
+
+
+class PeakMetadataTable:
+	"""
+	Helper class for peak metadata for insertion into a PDF or CSV report.
+
+	:param project: A GunShotMatch project.
+
+	.. versionadded:: 0.3.0
+	"""
+
+	def __init__(self, project: Project):
+
+		#: A GunShotMatch project.
+		self.project = project
+
+		assert project.consolidated_peaks is not None
+
+		#: The total number of peaks in the project.
+		self.max_peak_number = len(project.consolidated_peaks)
+
+		#: Maximum number of rows for the metadata table.
+		self.num_rows = max(5, len(project.datafile_data))
+
+		all_areas = [cp.area for cp in project.consolidated_peaks]
+		max_area = max(all_areas)
+
+		#: Peak areas as percentage of largest peak
+		self.area_percentages = [area / max_area for area in all_areas]
+
+	def get_summary_for_peak(self, peak: ConsolidatedPeak, peak_number: int) -> PeakSummary:
+		"""
+		Return a formatted summary of the peak.
+
+		:param peak:
+		:param peak_number: The peak number, 1-indexed.
+		"""
+
+		return PeakSummary(
+				str(peak_number),
+				peak.hits[0].name,
+				f"{peak.rt / 60:0.3f}",
+				f"{peak.area:0,.1f}",
+				f"{self.area_percentages[peak_number-1]:0.3%}",
+				f"{peak.hits[0].match_factor:.1f}",
+				f"{not peak.meta.get('acceptable_shape', True)}",
+				)
+
+	def get_table_for_peak(
+			self,
+			peak: ConsolidatedPeak,
+			peak_number: int,
+			) -> List[Tuple[str, str, str, str, str, str, str, str, str]]:
+		"""
+		Return tabulated data on the peak, with individual peak areas, retention times, and the top 5 hits.
+
+		:param peak:
+		:param peak_number: The peak number, 1-indexed.
+		"""
+
+		summary = self.get_summary_for_peak(peak, peak_number)
+		peak_metadata: List[Tuple[str, str]] = [
+				("Peak", f"{peak_number} / {self.max_peak_number}"),
+				("Retention Time", summary.rt),
+				("Peak Area", summary.area),
+				# ("Peak Area Stdev", f"{peak.area_stdev:0.1f}"),
+				("Peak Area %", summary.area_percentage),
+				("Rejected", summary.rejected),
+				]
+
+		peak_metadata = extend_list(peak_metadata, ('', ''), self.num_rows)
+
+		hits_data: List[Tuple[str, str, str]] = []
+		for hit in peak.hits[:5]:
+			hits_data.append((hit.name, f"{hit.match_factor:.1f}", str(len(hit))))
+
+		hits_data = extend_list(hits_data, ('', '', ''), self.num_rows)
+
+		rt_area_data = []
+		for rt, area in zip(peak.rt_list, peak.area_list):
+			rt_area_data.append((f"{rt/60:0.3f}", f"{area:0,.1f}"))
+
+		rt_area_data = extend_list(rt_area_data, ('', ''), self.num_rows)
+
+		table_data = [('', '', '', "Hit Name", "MF", 'n', '', "RTs", "Peak Areas")]
+		for peak_row, hits_row, rt_area_row in zip(peak_metadata, hits_data, rt_area_data):
+			table_row = peak_row + ('', ) + hits_row + ('', ) + rt_area_row
+			table_data.append(table_row)
+
+		return table_data
 
 
 def build_peak_report(
@@ -140,44 +249,12 @@ def build_peak_report(
 	doc_elements = [page_title_para]
 
 	assert project.consolidated_peaks is not None
-	max_peak_number = len(project.consolidated_peaks)
-
-	num_rows = max(5, len(project.datafile_data))
-
-	all_areas = [cp.area for cp in project.consolidated_peaks]
-	max_area = max(all_areas)
-	area_percentages = [area / max_area for area in all_areas]
+	metadata_table_writer = PeakMetadataTable(project)
 
 	for peak_idx, consolidated_peak in enumerate(project.consolidated_peaks):
 		image = _get_peak_image(project, consolidated_peak)
 
-		peak_metadata: List[Tuple[str, str]] = [
-				("Peak", f"{peak_idx+1} / {max_peak_number}"),
-				("Retention Time", f"{consolidated_peak.rt / 60:0.3f}"),
-				("Peak Area", f"{consolidated_peak.area:0,.1f}"),
-				# ("Peak Area Stdev", f"{consolidated_peak.area_stdev:0.1f}"),
-				("Peak Area %", f"{area_percentages[peak_idx]:0.3%}"),
-				("Rejected", f"{not consolidated_peak.meta.get('acceptable_shape', True)}"),
-				]
-
-		peak_metadata = extend_list(peak_metadata, ('', ''), num_rows)
-
-		hits_data: List[Tuple[str, str, str]] = []
-		for hit in consolidated_peak.hits[:5]:
-			hits_data.append((hit.name, f"{hit.match_factor:.1f}", str(len(hit))))
-
-		hits_data = extend_list(hits_data, ('', '', ''), num_rows)
-
-		rt_area_data = []
-		for rt, area in zip(consolidated_peak.rt_list, consolidated_peak.area_list):
-			rt_area_data.append((f"{rt/60:0.3f}", f"{area:0,.1f}"))
-
-		rt_area_data = extend_list(rt_area_data, ('', ''), num_rows)
-
-		table_data = [('', '', '', "Hit Name", "MF", 'n', '', "RTs", "Peak Areas")]
-		for peak_row, hits_row, rt_area_row in zip(peak_metadata, hits_data, rt_area_data):
-			table_row = peak_row + ('', ) + hits_row + ('', ) + rt_area_row
-			table_data.append(table_row)
+		table_data = metadata_table_writer.get_table_for_peak(consolidated_peak, peak_idx + 1)
 
 		t = Table(
 				table_data,
