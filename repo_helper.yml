@@ -11,7 +11,7 @@ short_desc: 'PDF Report Generation for GunShotMatch.'
 
 enable_tests: false
 enable_conda: false
-enable_docs: false
+standalone_contrib_guide: true
 use_whey: true
 
 python_versions:

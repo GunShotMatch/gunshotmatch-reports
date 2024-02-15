@@ -2,7 +2,7 @@
 #
 #  peaks.py
 """
-PDF Peak Report Generator.
+Peak Report Generator.
 """
 #
 #  Copyright © 2024 Dominic Davis-Foster <dominic@davis-foster.co.uk>
@@ -112,11 +112,23 @@ class PeakSummary(NamedTuple):
 
 	#: Peak number, 1-indexed
 	peak_no: str
+
+	#: The name of the top hit
 	name: str
+
+	#: Mean retention time
 	rt: str
+
+	#: Mean peak area
 	area: str
+
+	#: Mean peak area as a percentage of the largest peak
 	area_percentage: str
+
+	#: Mean match factor for the top hit
 	mf: str
+
+	#: Whether the peak has been rejected (e.g. with PeakViewer)
 	rejected: str
 
 
@@ -222,6 +234,8 @@ def build_peak_report(
 	:param project:
 	:param pdf_filename: Optional output filename. Defaults to :file:`{project_name}_peak_report.pdf`.
 	:no-default pdf_filename:
+
+	:returns: The output filename.
 	"""
 
 	if pdf_filename is None:
