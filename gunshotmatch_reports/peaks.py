@@ -27,6 +27,8 @@ PDF Peak Report Generator.
 #
 
 # stdlib
+import csv
+import io
 import os
 from typing import List, NamedTuple, Optional, Tuple
 
@@ -57,7 +59,7 @@ from reportlab.platypus import (  # type: ignore[import]
 # this package
 from gunshotmatch_reports.utils import extend_list, figure_to_drawing, scale
 
-__all__ = ("PeakMetadataTable", "PeakSummary", "build_peak_report")
+__all__ = ("CSVReports", "PeakMetadataTable", "PeakSummary", "build_peak_report")
 
 
 def _get_peak_figure(project: Project, consolidated_peak: ConsolidatedPeak) -> Figure:
@@ -285,3 +287,69 @@ def build_peak_report(
 	doc.build(doc_elements, onFirstPage=draw_footer, onLaterPages=draw_footer)
 
 	return pdf_filename
+
+
+class CSVReports:
+	"""
+	Class for producing CSV peak reports.
+
+	:param project: A GunShotMatch project.
+
+	.. versionadded:: 0.4.0
+	"""
+
+	def __init__(self, project: Project):
+
+		self._metadata_table_writer = PeakMetadataTable(project)
+
+		assert project.consolidated_peaks is not None
+		self._peaks_and_indices = list(enumerate(project.consolidated_peaks))
+		self._peaks_and_indices.sort(key=lambda x: x[1].area, reverse=True)
+
+	def overview_csv(self) -> str:
+		"""
+		Produce an overview report of the peaks, giving the name, retention time and peak area of the peaks.
+
+		The output columns are as follows:
+
+		* Peak No.
+		* Name – The name of the top hit
+		* Rt – Mean retention time
+		* Area – Mean peak area
+		* Area % – Mean peak area as a percentage of the largest peak
+		* MF – Mean match factor for the top hit
+		* Rejected – Whether the peak has been rejected (e.g. with PeakViewer)
+
+		The peaks are sorted from largest to smallest.
+		"""
+
+		fp = io.StringIO()
+
+		csvwriter = csv.writer(fp, quoting=csv.QUOTE_MINIMAL)
+
+		csvwriter.writerow(["Peak No.", "Name", "Rt", "Area", "Area %", "MF", "Rejected"])
+		for peak_idx, consolidated_peak in self._peaks_and_indices:
+			summary = self._metadata_table_writer.get_summary_for_peak(consolidated_peak, peak_idx + 1)
+			csvwriter.writerow(summary)
+		csvwriter.writerow('')
+
+		return fp.getvalue()
+
+	def summary_csv(self) -> str:
+		"""
+		Produce a summary report of the peaks, giving the individual retention times and hits.
+
+		The table for each peak mirrors the table in the PDF peak report (:func:`~.build_peak_report`).
+		The peaks are sorted from largest to smallest.
+		"""
+
+		fp = io.StringIO()
+
+		csvwriter = csv.writer(fp, quoting=csv.QUOTE_MINIMAL)
+
+		for peak_idx, consolidated_peak in self._peaks_and_indices:
+			table_data = self._metadata_table_writer.get_table_for_peak(consolidated_peak, peak_idx + 1)
+			csvwriter.writerows(table_data)
+			csvwriter.writerow('')
+
+		return fp.getvalue()
