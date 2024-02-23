@@ -39,4 +39,4 @@ known_third_party = [
     "reportlab",
     "svglib",
 ]
-known_first_party = "gunshotmatch_reports"
+known_first_party = [ "gunshotmatch_reports",]
