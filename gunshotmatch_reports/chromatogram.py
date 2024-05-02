@@ -36,6 +36,9 @@ from libgunshotmatch.project import Project
 from libgunshotmatch_mpl.chromatogram import draw_chromatograms
 from matplotlib import pyplot as plt  # type: ignore[import]
 
+# this package
+from gunshotmatch_reports.utils import save_pdf
+
 __all__ = ["build_chromatogram_report"]
 
 
@@ -56,6 +59,6 @@ def build_chromatogram_report(project: Project, pdf_filename: Optional[PathLike]
 	fig = plt.figure(layout="constrained", figsize=(11.7, 8.3))
 	axes = fig.subplots(len(project.datafile_data), 1, sharex=True)
 	draw_chromatograms(project, fig, axes)
-	fig.savefig(pdf_filename)
+	save_pdf(fig, pdf_filename)
 
 	return pdf_filename
