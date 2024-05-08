@@ -73,7 +73,7 @@ def _get_peak_figure(project: Project, consolidated_peak: ConsolidatedPeak) -> F
 			sharex=True,
 			)
 
-	draw_peaks(project, consolidated_peak.meta["peak_number"], figure, axes)
+	draw_peaks(project, consolidated_peak.rt_list, figure, axes)
 
 	return figure
 
