@@ -29,5 +29,5 @@ PDF Report Generation for GunShotMatch.
 __author__: str = "Dominic Davis-Foster"
 __copyright__: str = "2020-2024 Dominic Davis-Foster"
 __license__: str = "MIT License"
-__version__: str = "0.6.0"
+__version__: str = "0.7.0b1"
 __email__: str = "dominic@davis-foster.co.uk"
