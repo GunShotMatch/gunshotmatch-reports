@@ -333,18 +333,53 @@ class CSVReports:
 		* Area % – Mean peak area as a percentage of the largest peak
 		* MF – Mean match factor for the top hit
 		* Rejected – Whether the peak has been rejected (e.g. with PeakViewer)
+		* Min Peak Area – The minimum peak area across the repeats.
+		* Max Peak Area – The maximum peak area across the repeats.
+		* Peak Area Range – The difference between the minimum and maximum peak areas.
+		* Area Range Percent -ve – The difference between the minimum and mean peak areas as a percentage of the mean.
+		* Area Range Percent +ve – The difference between the maximum and mean peak areas as a percentage of the mean.
 
 		The peaks are sorted from largest to smallest.
+
+		.. versionchanged:: 0.8.0  Added Min Peak Area, Max Peak Area, Peak Area Range, and Area Range Percent columns.
 		"""
 
 		fp = io.StringIO()
 
 		csvwriter = csv.writer(fp, quoting=csv.QUOTE_MINIMAL)
 
-		csvwriter.writerow(["Peak No.", "Name", "Rt", "Area", "Area %", "MF", "Rejected"])
+		csvwriter.writerow([
+				"Peak No.",
+				"Name",
+				"Rt",
+				"Area",
+				"Area %",
+				"MF",
+				"Rejected",
+				"Min Peak Area",
+				"Max Peak Area",
+				"Peak Area Range",
+				"Range -ve%",
+				"Range +ve%"
+				])
+		consolidated_peak: ConsolidatedPeak
 		for peak_idx, consolidated_peak in self._peaks_and_indices:
 			summary = self._metadata_table_writer.get_summary_for_peak(consolidated_peak, peak_idx + 1)
-			csvwriter.writerow(summary)
+
+			min_peak_area = min(consolidated_peak.area_list)
+			max_peak_area = max(consolidated_peak.area_list)
+			area_range = max_peak_area - min_peak_area
+			min_pa_percent = (consolidated_peak.area - min_peak_area) / consolidated_peak.area * 100
+			max_pa_percent = (max_peak_area - consolidated_peak.area) / consolidated_peak.area * 100
+
+			csvwriter.writerow([
+					*summary,
+					f"{min_peak_area:0,.1f}",
+					f"{max_peak_area:0,.1f}",
+					f"{area_range:0,.1f}",
+					f"-{min_pa_percent:0,.1f}",
+					f"{max_pa_percent:0,.1f}"
+					])
 		csvwriter.writerow('')
 
 		return fp.getvalue()
