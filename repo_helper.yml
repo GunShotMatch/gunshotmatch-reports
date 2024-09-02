@@ -48,3 +48,9 @@ python_versions:
 # #  - needspace_amount = r"5\baselineskip"
 
 # standalone_contrib_guide: true
+
+github_ci_requirements:
+ Windows:
+  post:
+   # Prefery binary wheels for older versions over sdists for newer ones
+   - pip config set global.prefer-binary true
