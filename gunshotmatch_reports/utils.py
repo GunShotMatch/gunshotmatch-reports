@@ -31,13 +31,13 @@ from io import BytesIO, StringIO
 from typing import List, Tuple, TypeVar
 
 # 3rd party
-import matplotlib  # type: ignore[import]
+import matplotlib
 from domdf_python_tools.paths import PathPlus
 from domdf_python_tools.typing import PathLike
 from matplotlib import pyplot as plt
-from matplotlib.figure import Figure  # type: ignore[import]
-from reportlab.graphics.shapes import Drawing  # type: ignore[import]
-from svglib.svglib import svg2rlg  # type: ignore[import]
+from matplotlib.figure import Figure
+from reportlab.graphics.shapes import Drawing  # type: ignore[import-untyped]
+from svglib.svglib import svg2rlg  # type: ignore[import-untyped]
 
 __all__ = ["extend_list", "figure_to_drawing", "scale", "save_pdf", "save_svg"]
 

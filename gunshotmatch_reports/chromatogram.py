@@ -34,7 +34,7 @@ from typing import Optional
 from domdf_python_tools.paths import PathLike
 from libgunshotmatch.project import Project
 from libgunshotmatch_mpl.chromatogram import draw_chromatograms
-from matplotlib import pyplot as plt  # type: ignore[import]
+from matplotlib import pyplot as plt
 
 # this package
 from gunshotmatch_reports.utils import save_pdf

@@ -38,14 +38,14 @@ from libgunshotmatch.consolidate import ConsolidatedPeak
 from libgunshotmatch.project import Project
 from libgunshotmatch_mpl.peakviewer import draw_peaks
 from libgunshotmatch_mpl.peakviewer import load_project as load_project  # noqa: F401
-from matplotlib import pyplot as plt  # type: ignore[import]
-from matplotlib.figure import Figure  # type: ignore[import]
-from reportlab.lib import colors  # type: ignore[import]
-from reportlab.lib.pagesizes import A4  # type: ignore[import]
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore[import]
-from reportlab.lib.units import inch  # type: ignore[import]
-from reportlab.pdfgen.canvas import Canvas  # type: ignore[import]
-from reportlab.platypus import (  # type: ignore[import]
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+from reportlab.lib import colors  # type: ignore[import-untyped]
+from reportlab.lib.pagesizes import A4  # type: ignore[import-untyped]
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore[import-untyped]
+from reportlab.lib.units import inch  # type: ignore[import-untyped]
+from reportlab.pdfgen.canvas import Canvas  # type: ignore[import-untyped]
+from reportlab.platypus import (  # type: ignore[import-untyped]
 		BaseDocTemplate,
 		Image,
 		PageBreak,
