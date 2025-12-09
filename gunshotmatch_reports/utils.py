@@ -37,7 +37,7 @@ from domdf_python_tools.typing import PathLike
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from reportlab.graphics.shapes import Drawing  # type: ignore[import-untyped]
-from svglib.svglib import svg2rlg  # type: ignore[import-untyped]
+from svglib.svglib import svg2rlg
 
 __all__ = ["extend_list", "figure_to_drawing", "scale", "save_pdf", "save_svg"]
 
@@ -70,7 +70,7 @@ def figure_to_drawing(figure: Figure) -> Drawing:
 	figure.savefig(imgdata, format="svg")
 	plt.close(fig=figure)
 	imgdata.seek(0)  # go to start of BytesIO
-	return svg2rlg(imgdata)
+	return svg2rlg(imgdata)  # type: ignore[arg-type]
 
 
 _T = TypeVar("_T", bound=Tuple[str, ...])
