@@ -234,6 +234,7 @@ def build_peak_report(
 	:param project:
 	:param pdf_filename: Optional output filename. Defaults to :file:`{project_name}_peak_report.pdf`.
 	:no-default pdf_filename:
+	:param title_every_page: Whether to show the title (GunShotMatch Peak Report – <project name>) on every page or just the first.
 
 	:returns: The output filename.
 	"""
@@ -360,7 +361,7 @@ class CSVReports:
 				"Max Peak Area",
 				"Peak Area Range",
 				"Range -ve%",
-				"Range +ve%"
+				"Range +ve%",
 				])
 		consolidated_peak: ConsolidatedPeak
 		for peak_idx, consolidated_peak in self._peaks_and_indices:
@@ -378,7 +379,7 @@ class CSVReports:
 					f"{max_peak_area:0,.1f}",
 					f"{area_range:0,.1f}",
 					f"-{min_pa_percent:0,.1f}",
-					f"{max_pa_percent:0,.1f}"
+					f"{max_pa_percent:0,.1f}",
 					])
 		csvwriter.writerow('')
 

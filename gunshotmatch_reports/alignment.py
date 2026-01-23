@@ -106,7 +106,7 @@ def get_csv_data(project: Project, cp: Optional[ConsolidatedPeak], max_area: flo
 				f"{cp.rt / 60:.3f}",
 				f"{area:.1f}",
 				f"{area_percentage:.3%}",
-				f"{first_hit.match_factor:.1f}"
+				f"{first_hit.match_factor:.1f}",
 				)
 
 
