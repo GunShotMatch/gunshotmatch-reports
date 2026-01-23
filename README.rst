@@ -95,11 +95,11 @@ gunshotmatch-reports
 	:target: https://github.com/GunShotMatch/gunshotmatch-reports/commit/master
 	:alt: GitHub last commit
 
-.. |maintained| image:: https://img.shields.io/maintenance/yes/2025
+.. |maintained| image:: https://img.shields.io/maintenance/yes/2026
 	:alt: Maintenance
 
 .. |pypi-downloads| image:: https://img.shields.io/pypi/dm/gunshotmatch-reports
-	:target: https://pypi.org/project/gunshotmatch-reports/
+	:target: https://pypistats.org/packages/gunshotmatch-reports
 	:alt: PyPI - Downloads
 
 .. end shields
