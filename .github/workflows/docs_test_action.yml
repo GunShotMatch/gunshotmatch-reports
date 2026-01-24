@@ -25,6 +25,7 @@ jobs:
         with:
           pre-build-command: |
             python -m pip install tox
+            apt update
             apt-get install libcairo2-dev pkg-config cmake -y
           docs-folder: "doc-source/"
           build-command: "tox -e docs -- "
