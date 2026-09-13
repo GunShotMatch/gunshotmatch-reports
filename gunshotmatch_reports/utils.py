@@ -70,7 +70,7 @@ def figure_to_drawing(figure: Figure) -> Drawing:
 	figure.savefig(imgdata, format="svg")
 	plt.close(fig=figure)
 	imgdata.seek(0)  # go to start of BytesIO
-	return svg2rlg(imgdata)  # type: ignore[arg-type]
+	return svg2rlg(imgdata)
 
 
 _T = TypeVar("_T", bound=Tuple[str, ...])
